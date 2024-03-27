@@ -213,3 +213,13 @@ form button {
   width: 100%;
   position: relative;
 }
+
+.confirm-button{
+  border: 1px white solid;
+  padding: 8px 10px;
+  margin-right: 15px;
+}
+
+.delete-button{
+  background-color: #ef6f6c;
+}

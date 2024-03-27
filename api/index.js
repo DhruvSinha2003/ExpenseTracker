@@ -75,6 +75,20 @@ app.put("/api/transaction/:id", async (req, res) => {
   }
 });
 
+app.delete("/api/transaction/:id", async (req, res) => {
+    try {
+      const deletedTransaction = await Transaction.findOneAndDelete({ id: req.params.id });
+      if (!deletedTransaction) {
+        return res.status(404).json({ error: "Transaction not found" });
+      }
+      console.log("Transaction deleted:", deletedTransaction);
+      res.json({ message: "Transaction deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      res.status(500).json({ error: "Failed to delete transaction" });
+    }
+  });
+
 const port = 4040;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

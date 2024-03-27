@@ -8,6 +8,8 @@ const Edit = ({ transaction, onClose }) => {
     datetime: "",
   });
 
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+
   useEffect(() => {
     if (transaction) {
       setEditedTransaction(transaction);
@@ -46,7 +48,33 @@ const Edit = ({ transaction, onClose }) => {
       console.error("Error updating transaction:", error);
     }
   };
-  
+
+  const handleDelete = async () => {
+    setShowConfirmationModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/transaction/${transaction.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      console.log("Transaction deleted");
+      onClose(); // Close the popup after successful delete
+      window.location.reload(); // Refresh the page
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmationModal(false);
+  };
 
   return (
     <div className="popup-overlay">
@@ -94,10 +122,20 @@ const Edit = ({ transaction, onClose }) => {
             />
           </div>
           <button type="submit">Save</button>
+          <button className="delete-button" type="button" onClick={handleDelete}>
+            Delete
+          </button>
           <button type="button" onClick={onClose}>
             Cancel
           </button>
         </form>
+        {showConfirmationModal && (
+          <div className="confirmation-modal">
+            <p>Are you sure you want to delete this transaction?</p>
+            <button className="confirm-button" onClick={confirmDelete}>Yes</button>
+            <button className="confirm-button" onClick={cancelDelete}>No</button>
+          </div>
+        )}
       </div>
     </div>
   );
