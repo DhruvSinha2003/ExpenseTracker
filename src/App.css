@@ -1,36 +1,57 @@
-*{
+* {
   box-sizing: border-box;
 }
 
-body{
-  background-color: #121212 ;
-  color: #ddd;
+html, body {
+  height: 100%;
+  margin: 0; 
+  padding: 0; 
+  overflow-x: hidden;
 }
 
-main{
+body {
+  background: rgb(0, 69, 70);
+  background: linear-gradient(
+    0deg,
+    rgba(0, 69, 70, 1) 0%,
+    rgba(8, 47, 0, 1) 100%
+  );
+}
+
+.shell {
   max-width: 360px;
-  margin: 30px auto;
+  margin: 50px auto;
 }
 
-h1{
+main {
+  background-color: #1B2430;
+  max-width: 480px;
+  padding-bottom: 30px;
+  padding-top: 1px;
+  max-height: 720px;
+  margin: 100px auto;
+  border-radius: 7px;
+}
+
+h1 {
   text-align: center;
-  color: #FFF;
+  color: #fff;
   margin: 0;
 }
 
-.basics{
+.basics {
   display: flex;
   gap: 5px;
   margin-bottom: 5px;
 }
-form{
+form {
   margin-top: 20px;
 }
-form input[type="datetime-local"]{
+form input[type="datetime-local"] {
   color: gray;
 }
 
-form input{
+form input {
   width: 100%;
   background-color: transparent;
   color: #ddd;
@@ -38,7 +59,7 @@ form input{
   padding: 2px 5px;
 }
 
-form button{
+form button {
   width: 100%;
   margin-top: 5px;
   border: 0;
@@ -46,42 +67,42 @@ form button{
   background-color: #ddd;
 }
 
-.transactions{
+.transactions {
   margin-top: 10px;
 }
-.transaction{
+.transaction {
   display: flex;
   padding: 5px 0;
   justify-content: space-between;
   border-top: 1px solid #30313d;
 }
 
-.transaction:first-child{
+.transaction:first-child {
   border-top: 0;
 }
 
-.name{
+.name {
   font-size: 1rem;
 }
 
-.description{
-  font-size: .7rem;
+.description {
+  font-size: 0.7rem;
   color: #888;
 }
 
-.right{
+.right {
   text-align: right;
 }
 
-.price-expense{
-  color: #F00;
+.price-expense {
+  color: #f00;
 }
 
-.price-income{
-  color: #0F0;
+.price-income {
+  color: #0f0;
 }
 
-.transaction .datetime{
-  font-size: .7rem;
+.transaction .datetime {
+  font-size: 0.7rem;
   color: gray;
 }
