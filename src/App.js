@@ -7,6 +7,8 @@ function App() {
   const [datetime, setDatetime] = useState("");
   const [description, setDescription] = useState("");
   const [transactions, setTransactions] = useState([]);
+  const [hoveredTransaction, setHoveredTransaction] = useState(null);
+
   useEffect(() => {
     getTransactions().then(setTransactions);
   }, []);
@@ -66,6 +68,14 @@ function App() {
     });
   }
 
+  function handleHover(index) {
+    setHoveredTransaction(index);
+  }
+
+  function handleClick(clickedTransaction) {
+    console.log("Transaction clicked:", clickedTransaction);
+  }
+
   let balance = 0;
   for (const transaction of transactions) {
     balance = balance + transaction.price;
@@ -77,15 +87,15 @@ function App() {
           ₹{balance}
         </h1>
         <form onSubmit={addTransaction}>
-        <div className="price">
-          <input
-            className="price-input"
-            type="text"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder={"+/- Price"}
-          />
-        </div>
+          <div className="price">
+            <input
+              className="price-input"
+              type="text"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder={"+/- Price"}
+            />
+          </div>
           <div className="basics">
             <input
               type="text"
@@ -114,7 +124,15 @@ function App() {
             transactions
               .slice()
               .reverse()
-              .map((transaction) => (
+              .map((transaction, index) => (
+                <div
+                  className={`transaction ${
+                    hoveredTransaction === index ? "hovered" : ""
+                  }`}
+                  onMouseEnter={() => handleHover(index)}
+                  onMouseLeave={() => handleHover(null)}
+                  onClick={() => handleClick(transaction)}
+                >
                 <div className="transaction">
                   <div className="left">
                     <div className="name">{transaction.name}</div>
@@ -132,10 +150,11 @@ function App() {
                     <div className="datetime">
                       {formatDateTime(transaction.datetime)}
                     </div>
+                    </div>
                   </div>
                 </div>
               ))}
-        </div>
+              </div>
       </div>
     </main>
   );

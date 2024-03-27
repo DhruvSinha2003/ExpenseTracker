@@ -119,10 +119,38 @@ form button {
   margin-top: 10px;
 }
 .transaction {
+  width: 100%;
   display: flex;
   padding: 5px 0;
   justify-content: space-between;
   border-top: 1px solid #30313d;
+  position: relative;
+  overflow: hidden; /* Hide overflow content */
+}
+
+.transaction:hover {
+  background-color: #30313d;
+  transform: translateY(-5px); /* Move up slightly */
+  transition: transform 0.2s ease; /* Add transition effect */
+}
+
+.transaction .left,
+.transaction .right {
+  transition: transform 0.5s ease; /* Add transition effect */
+}
+
+.transaction:hover .left {
+  transform: translateX(15%); /* Move content to the left */
+}
+
+.transaction:hover .right {
+  transform: translateX(-15%); /* Move content to the right */
+}
+
+/* Ensure smooth transition for text inside the elements */
+.transaction .left *,
+.transaction .right * {
+  transition: transform 0.2s ease; /* Add transition effect */
 }
 
 .transaction:first-child {
