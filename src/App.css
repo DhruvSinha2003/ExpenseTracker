@@ -2,20 +2,17 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
-  margin: 0; 
-  padding: 0; 
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
 body {
-  background: rgb(0, 69, 70);
-  background: linear-gradient(
-    0deg,
-    rgba(0, 69, 70, 1) 0%,
-    rgba(8, 47, 0, 1) 100%
-  );
+  color: #ddd;
+  background-color: #121212;
 }
 
 .shell {
@@ -24,7 +21,7 @@ body {
 }
 
 main {
-  background-color: #1B2430;
+  background-color: #1e1e1e;
   max-width: 480px;
   padding-bottom: 30px;
   padding-top: 1px;
@@ -35,8 +32,35 @@ main {
 
 h1 {
   text-align: center;
-  color: #fff;
   margin: 0;
+}
+
+input{
+  text-align: center;
+}
+
+.balance-positive {
+  color: #1dd3b0;
+}
+
+.balance-negative {
+  color: #8c2f39;
+}
+
+.price{
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.price-input {
+  font-size: 1.2rem;
+  height: 50px;
+  width: 30%;
+  background-color: transparent;
+  color: #ddd;
+  border: 2px solid #30313d;
+  padding: 2px 5px;
 }
 
 .basics {
@@ -64,7 +88,7 @@ form button {
   margin-top: 5px;
   border: 0;
   padding: 5px;
-  background-color: #ddd;
+  background-color: #1dd3b0;
 }
 
 .transactions {
@@ -79,6 +103,7 @@ form button {
 
 .transaction:first-child {
   border-top: 0;
+  padding-top: 20px;
 }
 
 .name {
@@ -95,11 +120,11 @@ form button {
 }
 
 .price-expense {
-  color: #f00;
+  color: #ef6f6c;
 }
 
 .price-income {
-  color: #0f0;
+  color: #b2ff9e;
 }
 
 .transaction .datetime {
