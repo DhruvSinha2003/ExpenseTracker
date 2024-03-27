@@ -1,17 +1,31 @@
-import { BrowserRouter as Router } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
 import "./App.css";
 import Edit from "./Edit";
 
 function App() {
+  const now = new Date();
+  const currentDateTime =
+    now.getFullYear() +
+    "-" +
+    (now.getMonth() + 1).toString().padStart(2, "0") +
+    "-" +
+    now.getDate().toString().padStart(2, "0") +
+    "T" +
+    now.getHours().toString().padStart(2, "0") +
+    ":" +
+    now.getMinutes().toString().padStart(2, "0");
+
   const [price, setPrice] = useState("");
   const [name, setName] = useState("");
-  const [datetime, setDatetime] = useState("");
+  const [datetime, setDatetime] = useState(""); // This can be left empty initially
   const [description, setDescription] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [hoveredTransaction, setHoveredTransaction] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(false); // State for the form validation popup
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const transactionsPerPage = 5;
 
   useEffect(() => {
     getTransactions().then(setTransactions);
@@ -32,7 +46,7 @@ function App() {
     const hours = now.getHours().toString().padStart(2, "0");
     const minutes = now.getMinutes().toString().padStart(2, "0");
 
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `<span class="math-inline">\{year\}\-</span>{month}-<span class="math-inline">\{day\}T</span>{hours}:${minutes}`;
   }
 
   function formatDateTime(dateTimeString) {
@@ -49,10 +63,18 @@ function App() {
     return dateTime.toLocaleString("en-US", options);
   }
 
-  function addTransaction() {
+  function addTransaction(e) {
+    e.preventDefault(); // Prevent default form submission behavior
+  
     const url = process.env.REACT_APP_API_URL + "/transaction";
-    const transactionDatetime = datetime || getCurrentDateTime();
-
+    const transactionDatetime = datetime || currentDateTime;
+  
+    // Check if all fields are filled before submitting the transaction
+    if (!price || !name || !description) {
+      setShowPopup(true); // Show the popup if any field is empty
+      return;
+    }
+  
     fetch(url, {
       method: "POST",
       headers: { "Content-type": "application/json" },
@@ -69,6 +91,7 @@ function App() {
         setDatetime("");
         setDescription("");
         console.log("result" + json);
+          setTransactions([...transactions, json]); // Add the new transaction to the state
       });
     });
   }
@@ -97,6 +120,14 @@ function App() {
     balance = balance + transaction.price;
   }
 
+  const displayedTransactions = transactions
+    .slice()
+    .reverse()
+    .slice(
+      (currentPage - 1) * transactionsPerPage,
+      currentPage * transactionsPerPage
+    );
+
   return (
     <Router>
       <main>
@@ -123,7 +154,7 @@ function App() {
               />
               <input
                 type="datetime-local"
-                value={datetime || getCurrentDateTime()}
+                value={datetime || currentDateTime}
                 onChange={(e) => setDatetime(e.target.value)}
               />
             </div>
@@ -137,51 +168,117 @@ function App() {
             </div>
             <button type="submit">Add Transaction</button>
           </form>
+          {showPopup && ( // Conditionally render the popup based on showPopup state
+            <div className="popup-overlay" onClick={handleOverlayClick}>
+              <div className="popup">
+                <h3>Please fill in all fields</h3> {/* Text for the popup */}
+                <button onClick={handleClosePopup}>Close</button>
+              </div>
+            </div>
+          )}
           <div className="transactions">
-            {transactions.length > 0 &&
-              transactions
-                .slice()
-                .reverse()
-                .map((transaction, index) => (
-                  <div
-                    key={index}
-                    className={`transaction ${
-                      hoveredTransaction === index ? "hovered" : ""
-                    }`}
-                    onMouseEnter={() => handleHover(index)}
-                    onMouseLeave={() => handleHover(null)}
-                    onClick={() => handleTransactionClick(transaction)}
-                  >
-                    <div className="left">
-                      <div className="name">{transaction.name}</div>
-                      <div className="description">
-                        {transaction.description}
-                      </div>
+            {displayedTransactions.length > 0 &&
+              displayedTransactions.map((transaction, index) => (
+                <div
+                  key={index}
+                  className={`transaction ${
+                    hoveredTransaction === index ? "hovered" : ""
+                  }`}
+                  onMouseEnter={() => handleHover(index)}
+                  onMouseLeave={() => setHoveredTransaction(null)}
+                  onClick={() => handleTransactionClick(transaction)}
+                >
+                  <div className="left">
+                    <div className="name">{transaction.name}</div>
+                    <div className="description">{transaction.description}</div>
+                  </div>
+                  <div className="right">
+                    <div
+                      className={
+                        "price-" +
+                        (transaction.price < 0 ? "expense" : "income")
+                      }
+                    >
+                      {transaction.price}
                     </div>
-                    <div className="right">
-                      <div
-                        className={
-                          "price-" +
-                          (transaction.price < 0 ? "expense" : "income")
-                        }
-                      >
-                        {transaction.price}
-                      </div>
-                      <div className="datetime">
-                        {formatDateTime(transaction.datetime)}
-                      </div>
+                    <div className="datetime">
+                      {formatDateTime(transaction.datetime)}
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
+            {transactions.length > displayedTransactions.length && (
+              <div className="show-more">
+                {/* Show "See Newer Transactions" button only when on older pages */}
+                {currentPage > 1 && (
+                  <button onClick={() => setCurrentPage(currentPage - 1)}>
+                    See Newer Transactions
+                  </button>
+                )}
+                <button
+                  onClick={() =>
+                    setCurrentPage(
+                      Math.ceil(transactions.length / transactionsPerPage)
+                    )
+                  }
+                >
+                  See Older Transactions
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>
+      <Routes>
+        <Route
+          path="/transactions"
+          element={
+            <div className="all-transactions">
+              <h2>All Transactions</h2>
+              {transactions.length > 0 && (
+                <ul>
+                  {transactions.map((transaction, index) => (
+                    <li key={index}>
+                      <div className="left">
+                        <div className="name">{transaction.name}</div>
+                        <div className="description">
+                          {transaction.description}
+                        </div>
+                      </div>
+                      <div className="right">
+                        <div
+                          className={
+                            "price-" +
+                            (transaction.price < 0 ? "expense" : "income")
+                          }
+                        >
+                          {transaction.price}
+                        </div>
+                        <div className="datetime">
+                          {formatDateTime(transaction.datetime)}
+                        </div>
+                      </div>
+                      <Edit
+                        transaction={transaction}
+                        onClose={handleClosePopup}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          }
+        />
+      </Routes>
       {showPopup && (
         <div className="popup-overlay" onClick={handleOverlayClick}>
-          <Edit transaction={selectedTransaction} onClose={handleClosePopup} />
+          <div className="popup">
+            <h3>Please fill in all fields</h3> {/* Text for the popup */}
+            <button onClick={handleClosePopup}>Close</button>
+          </div>
         </div>
       )}
-    </Router>
+    </Router> 
   );
 }
 

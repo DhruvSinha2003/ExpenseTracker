@@ -132,8 +132,8 @@ const Edit = ({ transaction, onClose }) => {
         {showConfirmationModal && (
           <div className="confirmation-modal">
             <p>Are you sure you want to delete this transaction?</p>
-            <button className="confirm-button" onClick={confirmDelete}>Yes</button>
-            <button className="confirm-button" onClick={cancelDelete}>No</button>
+            <button className="delete-button" onClick={confirmDelete}>Yes</button>
+            <button  onClick={cancelDelete}>No</button>
           </div>
         )}
       </div>

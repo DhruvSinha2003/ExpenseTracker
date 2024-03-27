@@ -1,6 +1,8 @@
 * {
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+
 }
 
 ::-webkit-scrollbar {
@@ -31,7 +33,6 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
 }
 
 body {
@@ -49,7 +50,7 @@ main {
   max-width: 480px;
   padding-bottom: 30px;
   padding-top: 1px;
-  max-height: 720px;
+  max-height: 660px;
   margin: 100px auto;
   border-radius: 7px;
 }
@@ -107,7 +108,7 @@ form input {
   padding: 2px 5px;
 }
 
-form button {
+ button {
   width: 100%;
   margin-top: 5px;
   border: 0;
@@ -214,11 +215,6 @@ form button {
   position: relative;
 }
 
-.confirm-button{
-  border: 1px white solid;
-  padding: 8px 10px;
-  margin-right: 15px;
-}
 
 .delete-button{
   background-color: #ef6f6c;
