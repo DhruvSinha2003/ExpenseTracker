@@ -1,5 +1,7 @@
+import { BrowserRouter as Router } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./App.css";
+import Edit from "./Edit";
 
 function App() {
   const [price, setPrice] = useState("");
@@ -8,10 +10,13 @@ function App() {
   const [description, setDescription] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [hoveredTransaction, setHoveredTransaction] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   useEffect(() => {
     getTransactions().then(setTransactions);
   }, []);
+
   async function getTransactions() {
     const response = await fetch(
       process.env.REACT_APP_API_URL + "/transactions"
@@ -72,91 +77,111 @@ function App() {
     setHoveredTransaction(index);
   }
 
-  function handleClick(clickedTransaction) {
-    console.log("Transaction clicked:", clickedTransaction);
-  }
+  const handleTransactionClick = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setSelectedTransaction(null);
+  };
+  const handleOverlayClick = (e) => {
+    if (e.target.classList.contains("popup-overlay")) {
+      handleClosePopup();
+    }
+  };
 
   let balance = 0;
   for (const transaction of transactions) {
     balance = balance + transaction.price;
   }
+
   return (
-    <main>
-      <div className="shell">
-        <h1 className={balance < 0 ? "balance-negative" : "balance-positive"}>
-          ₹{balance}
-        </h1>
-        <form onSubmit={addTransaction}>
-          <div className="price">
-            <input
-              className="price-input"
-              type="text"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder={"+/- Price"}
-            />
-          </div>
-          <div className="basics">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={"Food"}
-            />
-            <input
-              type="datetime-local"
-              value={datetime || getCurrentDateTime()}
-              onChange={(e) => setDatetime(e.target.value)}
-            />
-          </div>
-          <div className="description">
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={"Description"}
-            />
-          </div>
-          <button typeof="submit">Add Transaction</button>
-        </form>
-        <div className="transactions">
-          {transactions.length > 0 &&
-            transactions
-              .slice()
-              .reverse()
-              .map((transaction, index) => (
-                <div
-                  className={`transaction ${
-                    hoveredTransaction === index ? "hovered" : ""
-                  }`}
-                  onMouseEnter={() => handleHover(index)}
-                  onMouseLeave={() => handleHover(null)}
-                  onClick={() => handleClick(transaction)}
-                >
-                <div className="transaction">
-                  <div className="left">
-                    <div className="name">{transaction.name}</div>
-                    <div className="description">{transaction.description}</div>
+    <Router>
+      <main>
+        <div className="shell">
+          <h1 className={balance < 0 ? "balance-negative" : "balance-positive"}>
+            ₹{balance}
+          </h1>
+          <form onSubmit={addTransaction}>
+            <div className="price">
+              <input
+                className="price-input"
+                type="text"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder={"+/- Price"}
+              />
+            </div>
+            <div className="basics">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={"Food"}
+              />
+              <input
+                type="datetime-local"
+                value={datetime || getCurrentDateTime()}
+                onChange={(e) => setDatetime(e.target.value)}
+              />
+            </div>
+            <div className="description">
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={"Description"}
+              />
+            </div>
+            <button type="submit">Add Transaction</button>
+          </form>
+          <div className="transactions">
+            {transactions.length > 0 &&
+              transactions
+                .slice()
+                .reverse()
+                .map((transaction, index) => (
+                  <div
+                    key={index}
+                    className={`transaction ${
+                      hoveredTransaction === index ? "hovered" : ""
+                    }`}
+                    onMouseEnter={() => handleHover(index)}
+                    onMouseLeave={() => handleHover(null)}
+                    onClick={() => handleTransactionClick(transaction)}
+                  >
+                    <div className="left">
+                      <div className="name">{transaction.name}</div>
+                      <div className="description">
+                        {transaction.description}
+                      </div>
+                    </div>
+                    <div className="right">
+                      <div
+                        className={
+                          "price-" +
+                          (transaction.price < 0 ? "expense" : "income")
+                        }
+                      >
+                        {transaction.price}
+                      </div>
+                      <div className="datetime">
+                        {formatDateTime(transaction.datetime)}
+                      </div>
+                    </div>
                   </div>
-                  <div className="right">
-                    <div
-                      className={
-                        "price-" +
-                        (transaction.price < 0 ? "expense" : "income")
-                      }
-                    >
-                      {transaction.price}
-                    </div>
-                    <div className="datetime">
-                      {formatDateTime(transaction.datetime)}
-                    </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              </div>
-      </div>
-    </main>
+                ))}
+          </div>
+        </div>
+      </main>
+      {showPopup && (
+        <div className="popup-overlay" onClick={handleOverlayClick}>
+          <Edit transaction={selectedTransaction} onClose={handleClosePopup} />
+        </div>
+      )}
+    </Router>
   );
 }
 
