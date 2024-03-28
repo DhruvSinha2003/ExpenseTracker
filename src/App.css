@@ -53,6 +53,7 @@ main {
   max-height: 660px;
   margin: 100px auto;
   border-radius: 7px;
+  overflow-y: hidden;
 }
 
 h1 {

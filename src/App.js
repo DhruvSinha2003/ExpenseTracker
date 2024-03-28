@@ -38,17 +38,6 @@ function App() {
     return await response.json();
   }
 
-  function getCurrentDateTime() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, "0");
-    const day = now.getDate().toString().padStart(2, "0");
-    const hours = now.getHours().toString().padStart(2, "0");
-    const minutes = now.getMinutes().toString().padStart(2, "0");
-
-    return `<span class="math-inline">\{year\}\-</span>{month}-<span class="math-inline">\{day\}T</span>{hours}:${minutes}`;
-  }
-
   function formatDateTime(dateTimeString) {
     const options = {
       month: "short",
@@ -65,16 +54,16 @@ function App() {
 
   function addTransaction(e) {
     e.preventDefault(); // Prevent default form submission behavior
-  
+
     const url = process.env.REACT_APP_API_URL + "/transaction";
     const transactionDatetime = datetime || currentDateTime;
-  
+
     // Check if all fields are filled before submitting the transaction
     if (!price || !name || !description) {
       setShowPopup(true); // Show the popup if any field is empty
       return;
     }
-  
+
     fetch(url, {
       method: "POST",
       headers: { "Content-type": "application/json" },
@@ -91,139 +80,184 @@ function App() {
         setDatetime("");
         setDescription("");
         console.log("result" + json);
-          setTransactions([...transactions, json]); // Add the new transaction to the state
+        setTransactions([...transactions, json]); // Add the new transaction to the state
       });
     });
   }
 
-  function handleHover(index) {
+  const handleHover = (index) => {
     setHoveredTransaction(index);
-  }
-
-  const handleTransactionClick = (transaction) => {
-    setSelectedTransaction(transaction);
-    setShowPopup(true);
   };
 
-  const handleClosePopup = () => {
-    setShowPopup(false);
-    setSelectedTransaction(null);
-  };
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains("popup-overlay")) {
-      handleClosePopup();
+  // New transaction handler for adding transactions
+  const handleAddTransactionClick = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+
+    const url = process.env.REACT_APP_API_URL + "/transaction";
+    const transactionDatetime = datetime || currentDateTime;
+
+    // Check if all fields are filled before submitting the transaction
+    if (!price || !name || !description) {
+      setShowPopup(true); // Show the popup if any field is empty
+      return;
     }
-  };
 
-  let balance = 0;
-  for (const transaction of transactions) {
-    balance = balance + transaction.price;
-  }
-
-  const displayedTransactions = transactions
-    .slice()
-    .reverse()
-    .slice(
-      (currentPage - 1) * transactionsPerPage,
-      currentPage * transactionsPerPage
-    );
-
-  return (
-    <Router>
-      <main>
-        <div className="shell">
-          <h1 className={balance < 0 ? "balance-negative" : "balance-positive"}>
-            ₹{balance}
-          </h1>
-          <form onSubmit={addTransaction}>
-            <div className="price">
-              <input
-                className="price-input"
-                type="text"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder={"+/- Price"}
-              />
-            </div>
-            <div className="basics">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={"Food"}
-              />
-              <input
-                type="datetime-local"
-                value={datetime || currentDateTime}
-                onChange={(e) => setDatetime(e.target.value)}
-              />
-            </div>
-            <div className="description">
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder={"Description"}
-              />
-            </div>
-            <button type="submit">Add Transaction</button>
-          </form>
-          {showPopup && ( // Conditionally render the popup based on showPopup state
-            <div className="popup-overlay" onClick={handleOverlayClick}>
-              <div className="popup">
-                <h3>Please fill in all fields</h3> {/* Text for the popup */}
-                <button onClick={handleClosePopup}>Close</button>
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-type": "application/json" },
+      body: JSON.stringify({
+        name,
+        price,
+        description,
+        datetime: transactionDatetime,
+      })
+    }).then((response) => {
+        response.json().then((json) => {
+          setName("");
+          setPrice("");
+          setDatetime("");
+          setDescription("");
+          console.log("result" + json);
+          setTransactions([...transactions, json]); // Add the new transaction to the state
+        });
+      });
+    };
+  
+    // New handler for clicking on existing transactions
+    const handleEditTransactionClick = (transaction) => {
+      if (transaction) {
+        setSelectedTransaction(transaction);
+        setShowPopup(true); // Show the edit popup
+      }
+    };
+  
+    const handleClosePopup = () => {
+      setShowPopup(false);
+      setSelectedTransaction(null);
+    };
+    const handleOverlayClick = (e) => {
+      if (e.target.classList.contains("popup-overlay")) {
+        handleClosePopup();
+      }
+    };
+  
+    let balance = 0;
+    for (const transaction of transactions) {
+      balance = balance + transaction.price;
+    }
+  
+    const displayedTransactions = transactions
+      .slice()
+      .reverse()
+      .slice(
+        (currentPage - 1) * transactionsPerPage,
+        currentPage * transactionsPerPage
+      );
+  
+    return (
+      <Router>
+        <main>
+          <div className="shell">
+            <h1 className={balance < 0 ? "balance-negative" : "balance-positive"}>
+              ₹{balance}
+            </h1>
+            <form onSubmit={handleAddTransactionClick}>
+              <div className="price">
+                <input
+                  className="price-input"
+                  type="text"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder={"+/- Price"}
+                />
               </div>
-            </div>
-          )}
-          <div className="transactions">
-            {displayedTransactions.length > 0 &&
-              displayedTransactions.map((transaction, index) => (
-                <div
-                  key={index}
-                  className={`transaction ${
-                    hoveredTransaction === index ? "hovered" : ""
-                  }`}
-                  onMouseEnter={() => handleHover(index)}
-                  onMouseLeave={() => setHoveredTransaction(null)}
-                  onClick={() => handleTransactionClick(transaction)}
-                >
-                  <div className="left">
-                    <div className="name">{transaction.name}</div>
-                    <div className="description">{transaction.description}</div>
-                  </div>
-                  <div className="right">
-                    <div
-                      className={
-                        "price-" +
-                        (transaction.price < 0 ? "expense" : "income")
-                      }
-                    >
-                      {transaction.price}
+              <div className="basics">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={"Food"}
+                />
+                <input
+                  type="datetime-local"
+                  value={datetime || currentDateTime}
+                  onChange={(e) => setDatetime(e.target.value)}
+                />
+              </div>
+              <div className="description">
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={"Description"}
+                />
+              </div>
+              <button type="submit">Add Transaction</button>
+            </form>
+            {showPopup && (
+              <> {/* Render based on the context */}
+                {!selectedTransaction && (
+                  // Render "fill all fields" popup for adding transactions
+                  <div className="popup-overlay" onClick={handleOverlayClick}>
+                    <div className="popup">
+                      <h3>Please fill in all fields</h3>
+                      <button onClick={handleClosePopup}>Close</button>
                     </div>
-                    <div className="datetime">
-                      {formatDateTime(transaction.datetime)}
-                    </div>
                   </div>
-                </div>
-              ))}
-            {transactions.length > displayedTransactions.length && (
-              <div className="show-more">
-                {/* Show "See Newer Transactions" button only when on older pages */}
-                {currentPage > 1 && (
-                  <button onClick={() => setCurrentPage(currentPage - 1)}>
-                    See Newer Transactions
-                  </button>
                 )}
-                <button
-                  onClick={() =>
-                    setCurrentPage(
-                      Math.ceil(transactions.length / transactionsPerPage)
-                    )
-                  }
-                >
-                  See Older Transactions
-                </button>
+                {selectedTransaction && (
+                  // Render edit popup for existing transactions
+                  <div className="popup-overlay" onClick={handleOverlayClick}>
+                    <Edit transaction={selectedTransaction} onClose={handleClosePopup} />
+                  </div>
+                )}
+              </>
+            )}
+            <div className="transactions">
+              {displayedTransactions.length > 0 &&
+                displayedTransactions.map((transaction, index) => (
+                  <div
+                    key={index}
+                    className={`transaction ${
+                      hoveredTransaction === index ? "hovered" : ""
+                    }`}
+                    onClick={() => handleEditTransactionClick(transaction)}
+                    // ... other props
+                  >
+                    {/* Transaction details */}
+                    <div className="left">
+                      <div className="name">{transaction.name}</div>
+                      <div className="description">{transaction.description}</div>
+                    </div>
+                    <div className="right">
+                      <div
+                        className={
+                          "price-" + (transaction.price < 0 ? "expense" : "income")
+                        }
+                      >
+                        {transaction.price}
+                      </div>
+                      <div className="datetime">
+                        {formatDateTime(transaction.datetime)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              {transactions.length > displayedTransactions.length && (
+                <div className="show-more">
+                  {/* Show "See Newer Transactions" button only when on older pages */}
+                  {currentPage > 1 && (
+  <button onClick={() => setCurrentPage(currentPage - 1)}>
+    See Newer Transactions
+  </button>
+)}
+<button
+  onClick={() =>
+    setCurrentPage(Math.ceil(transactions.length / transactionsPerPage))
+  }
+>
+  See Older Transactions
+</button>
               </div>
             )}
           </div>
@@ -270,16 +304,9 @@ function App() {
           }
         />
       </Routes>
-      {showPopup && (
-        <div className="popup-overlay" onClick={handleOverlayClick}>
-          <div className="popup">
-            <h3>Please fill in all fields</h3> {/* Text for the popup */}
-            <button onClick={handleClosePopup}>Close</button>
-          </div>
-        </div>
-      )}
-    </Router> 
+    </Router>
   );
 }
 
 export default App;
+
